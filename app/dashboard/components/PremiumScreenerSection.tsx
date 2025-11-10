@@ -13,12 +13,12 @@ import {
   X,
 } from "lucide-react"
 
-/* ---------- tiny utils ---------- */
+/* --------------------------------- helpers -------------------------------- */
 function cx(...a: Array<string | false | undefined>) {
   return a.filter(Boolean).join(" ")
 }
 
-/* ---------- stacked bar with gradients + labels ---------- */
+/** Horizontal stacked bar with gradients, rounded corners, divider, and auto labels */
 function StackedBar({ red, green }: { red: number; green: number }) {
   const showRed = red > 15
   const showGreen = green > 15
@@ -28,7 +28,9 @@ function StackedBar({ red, green }: { red: number; green: number }) {
       className="relative h-9 w-full overflow-hidden rounded-lg"
       style={{
         boxShadow:
-          "inset 0 0 0 1px rgba(30,41,59,.55), inset 0 1px 0 rgba(255,255,255,.03)",
+          "inset 0 0 0 1px rgba(31,41,55,.55), inset 0 1px 0 rgba(255,255,255,.03)",
+        background:
+          "linear-gradient(180deg, rgba(2,6,23,.18) 0%, rgba(2,6,23,.28) 100%)",
       }}
     >
       <div
@@ -36,7 +38,7 @@ function StackedBar({ red, green }: { red: number; green: number }) {
         style={{
           width: `${red}%`,
           background:
-            "linear-gradient(90deg, rgba(239,68,68,.95) 0%, rgba(239,68,68,.85) 50%, rgba(239,68,68,.95) 100%)",
+            "linear-gradient(90deg, rgba(239,68,68,.96) 0%, rgba(239,68,68,.86) 50%, rgba(239,68,68,.96) 100%)",
           boxShadow: "inset 0 0 16px rgba(0,0,0,.18)",
         }}
       >
@@ -47,20 +49,19 @@ function StackedBar({ red, green }: { red: number; green: number }) {
         style={{
           width: `${green}%`,
           background:
-            "linear-gradient(90deg, rgba(16,185,129,.95) 0%, rgba(16,185,129,.85) 50%, rgba(16,185,129,.95) 100%)",
+            "linear-gradient(90deg, rgba(16,185,129,.96) 0%, rgba(16,185,129,.86) 50%, rgba(16,185,129,.96) 100%)",
           boxShadow: "inset 0 0 16px rgba(0,0,0,.18)",
         }}
       >
         {showGreen ? `${green}%` : ""}
       </div>
-
-      {/* clean divider where they meet */}
+      {/* crisp divider where the colors meet */}
       <div
         className="absolute top-0 bottom-0"
         style={{
           left: `${red}%`,
           width: 1,
-          background: "rgba(0,0,0,.35)",
+          background: "rgba(0,0,0,.38)",
           boxShadow: "0 0 0 1px rgba(255,255,255,.06)",
         }}
       />
@@ -68,8 +69,49 @@ function StackedBar({ red, green }: { red: number; green: number }) {
   )
 }
 
-/* ---------- main section ---------- */
+function Pill({
+  children,
+  tone = "cyan",
+  className,
+}: {
+  children: React.ReactNode
+  tone?: "cyan" | "gold" | "muted"
+  className?: string
+}) {
+  const styles =
+    tone === "gold"
+      ? {
+          background: "rgba(255,215,0,.18)",
+          color: "#FFD700",
+          border: "1px solid rgba(255,215,0,.35)",
+        }
+      : tone === "muted"
+      ? {
+          background: "rgba(148,163,184,.12)",
+          color: "hsl(var(--fs-foreground))",
+          border: "1px solid rgba(148,163,184,.25)",
+        }
+      : {
+          background: "rgba(14,165,233,.16)",
+          color: "hsl(var(--fs-primary))",
+          border: "1px solid rgba(14,165,233,.35)",
+        }
+  return (
+    <span
+      className={cx(
+        "inline-flex items-center rounded-full px-2 py-[3px] text-[11px] font-semibold",
+        className
+      )}
+      style={styles}
+    >
+      {children}
+    </span>
+  )
+}
+
+/* ---------------------------------- view ---------------------------------- */
 export default function PremiumScreenerSection() {
+  // demo data to match prototype
   const rows = [
     {
       symbol: "AAPL",
@@ -133,84 +175,50 @@ export default function PremiumScreenerSection() {
     <div className="space-y-6">
       {/* Title */}
       <div>
-        <h1 className="text-[34px] font-semibold text-white">Premium Screener</h1>
-        <p className="muted text-[16px]">
+        <h1 className="text-[34px] font-semibold text-white tracking-tight">
+          Premium Screener
+        </h1>
+        <p className="text-[16px]" style={{ color: "hsl(var(--fs-muted))" }}>
           Real-time multi-timeframe trend analysis
         </p>
       </div>
 
-      {/* Controls — two rows compact like Figma */}
-      <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        <select
-          aria-label="Asset Class"
-          className="h-10 rounded-lg px-3 text-[14px]"
-          style={{
-            background: "hsl(var(--fs-bg-2))",
-            border: "1px solid hsl(var(--fs-border))",
-            color: "hsl(var(--fs-foreground))",
-            outline: "none",
-          }}
-          defaultValue="All Asset Classes"
-        >
-          {[
-            "All Asset Classes",
-            "Forex",
-            "Crypto",
-            "Stocks",
-            "Indices",
-          ].map((o) => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
+      {/* Controls — single-row on ≥lg; wraps gracefully on small screens */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="flex flex-1 items-center gap-3">
+          <SelectLike defaultValue="All Asset Classes" options={["All Asset Classes", "Forex", "Crypto", "Stocks", "Indices"]} />
+          <SelectLike defaultValue="All Trends" options={["All Trends", "Strong Bullish", "Bullish", "Neutral", "Bearish", "Strong Bearish"]} />
+          <div className="relative flex-1 max-w-md">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+              color="hsl(var(--fs-muted))"
+            />
+            <input
+              placeholder="Search symbols..."
+              className="h-10 w-full rounded-lg pl-9 pr-3 text-[14px]"
+              style={{
+                background: "hsl(var(--fs-bg-2))",
+                border: "1px solid hsl(var(--fs-border))",
+                color: "hsl(var(--fs-foreground))",
+                outline: "none",
+              }}
+            />
+          </div>
+        </div>
 
-        <select
-          aria-label="Trend Strength"
-          className="h-10 rounded-lg px-3 text-[14px]"
-          style={{
-            background: "hsl(var(--fs-bg-2))",
-            border: "1px solid hsl(var(--fs-border))",
-            color: "hsl(var(--fs-foreground))",
-            outline: "none",
-          }}
-          defaultValue="All Trends"
-        >
-          {[
-            "All Trends",
-            "Strong Bullish",
-            "Bullish",
-            "Neutral",
-            "Bearish",
-            "Strong Bearish",
-          ].map((o) => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
-
-        <div className="relative md:col-span-1 xl:col-span-2">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2"
-            color="hsl(var(--fs-muted))"
-          />
-          <input
-            placeholder="Search symbols..."
-            className="h-10 w-full rounded-lg pl-9 pr-3 text-[14px]"
+        <div className="flex items-center gap-2 lg:justify-end">
+          <button className="h-10 rounded-lg px-3 text-[14px] flex items-center"
             style={{
               background: "hsl(var(--fs-bg-2))",
               border: "1px solid hsl(var(--fs-border))",
               color: "hsl(var(--fs-foreground))",
-              outline: "none",
-            }}
-          />
-        </div>
-
-        <div className="flex items-center gap-2 md:justify-end">
-          <button className="btn h-10">
+            }}>
             <RefreshCcw size={16} className="mr-2" />
-            <span>Last updated: 2 mins ago</span>
+            Last updated: 2 mins ago
           </button>
           <button
-            className="btn h-10"
+            className="h-10 rounded-lg px-3 text-[14px] flex items-center"
             style={{
               background: "transparent",
               border: "1px solid hsl(var(--fs-primary))",
@@ -229,39 +237,34 @@ export default function PremiumScreenerSection() {
         style={{
           background: "hsl(var(--fs-bg-2))",
           border: "1px solid hsl(var(--fs-border))",
-          boxShadow: "0 4px 20px rgba(0,0,0,.25)",
+          boxShadow: "0 10px 30px rgba(0,0,0,.35)",
         }}
       >
         <table className="w-full text-sm">
-          {/* header */}
           <thead>
             <tr
-              className="[&>th]:py-4 [&>th]:px-5 text-left text-white"
+              className="[&>th]:py-4 [&>th]:px-6 text-left text-white"
               style={{
-                background: "linear-gradient(0deg, rgba(15,23,42,1) 0%, rgba(15,23,42,.94) 100%)",
+                background:
+                  "linear-gradient(180deg, rgba(15,23,42,.98) 0%, rgba(15,23,42,.92) 100%)",
                 borderBottom: "1px solid hsl(var(--fs-border))",
               }}
             >
-              <th className="w-[160px]">SYMBOL</th>
-              <th className="text-center">INTRADAY</th>
-              <th className="text-center">DAILY</th>
-              <th className="text-center">
-                ADVANCED{" "}
-                <span
-                  className="ml-2 rounded-full px-2 py-[2px] text-[11px] font-semibold"
-                  style={{
-                    background: "rgba(255,215,0,.2)",
-                    color: "#FFD700",
-                    border: "1px solid rgba(255,215,0,.35)",
-                  }}
-                >
-                  PRO
-                </span>
+              <th className="w-[180px] font-semibold tracking-wide">SYMBOL</th>
+              <th className="text-center font-semibold tracking-wide">INTRADAY</th>
+              <th className="text-center font-semibold tracking-wide">DAILY</th>
+              <th className="text-center font-semibold tracking-wide">
+                <span className="align-middle">ADVANCED</span>{" "}
+                <Pill tone="gold" className="ml-2 align-middle">PRO</Pill>
               </th>
             </tr>
             <tr
-              className="[&>th]:py-2 [&>th]:px-5 text-[12px] text-center"
-              style={{ color: "hsl(var(--fs-muted))", borderBottom: "1px solid hsl(var(--fs-border))" }}
+              className="[&>th]:py-2 [&>th]:px-6 text-[12px] text-center"
+              style={{
+                color: "hsl(var(--fs-muted))",
+                borderBottom: "1px solid hsl(var(--fs-border))",
+                letterSpacing: ".02em",
+              }}
             >
               <th />
               <th>1M | 5M | 15M | 1H</th>
@@ -270,7 +273,6 @@ export default function PremiumScreenerSection() {
             </tr>
           </thead>
 
-          {/* rows */}
           <tbody>
             {rows.map((r, i) => (
               <tr
@@ -279,11 +281,11 @@ export default function PremiumScreenerSection() {
                 style={{
                   borderBottom: "1px solid hsl(var(--fs-border))",
                   background: i % 2 ? "rgba(255,255,255,.01)" : "transparent",
-                  height: 68,
+                  height: 72,
                 }}
               >
                 {/* SYMBOL */}
-                <td className="px-5">
+                <td className="px-6">
                   <div className="flex items-center gap-3">
                     {r.advanced.fav ? (
                       <Star size={16} color="hsl(var(--fs-primary))" />
@@ -302,63 +304,72 @@ export default function PremiumScreenerSection() {
                 </td>
 
                 {/* INTRADAY */}
-                <td className="px-5">
+                <td className="px-6 align-middle">
                   <StackedBar red={r.intraday.red} green={r.intraday.green} />
                 </td>
 
                 {/* DAILY */}
-                <td className="px-5">
+                <td className="px-6 align-middle">
                   <StackedBar red={r.daily.red} green={r.daily.green} />
                 </td>
 
-                {/* ADVANCED */}
-                <td className="px-5">
-                  <div className="flex items-center justify-center gap-6 text-white">
+                {/* ADVANCED: four equal subcells with vertical separators */}
+                <td className="px-6 align-middle">
+                  <div
+                    className="grid grid-cols-4 items-center text-white"
+                    style={{
+                      columnGap: "18px",
+                    }}
+                  >
                     {/* ADX */}
-                    <div
-                      className={cx(
-                        "min-w-[64px] text-center",
-                        r.advanced.adx >= 25
-                          ? "text-[hsl(160,84%,39%)]"
-                          : "text-[hsl(var(--fs-muted-h),var(--fs-muted-s),var(--fs-muted-l))] muted"
-                      )}
-                      title="Average Directional Index"
-                    >
-                      {r.advanced.adx} <ArrowUp size={14} className="inline -mt-[2px]" />
-                    </div>
-
-                    {/* EMA */}
-                    <div
-                      className={cx(
-                        "min-w-[84px] flex items-center justify-center gap-1",
-                        r.advanced.emaAligned ? "text-[hsl(160,84%,39%)]" : "text-[hsl(0,84%,57%)]"
-                      )}
-                      title="EMA alignment"
-                    >
-                      {r.advanced.emaAligned ? <Check size={14} /> : <X size={14} />}
-                      <span className="text-[13px]">
-                        {r.advanced.emaAligned ? "Aligned" : "Crossed"}
+                    <div className="text-center">
+                      <span
+                        className={cx(
+                          "text-[14px] font-medium",
+                          r.advanced.adx >= 25
+                            ? "text-[hsl(160,84%,39%)]"
+                            : "text-[hsl(215,20%,65%)]"
+                        )}
+                      >
+                        {r.advanced.adx}{" "}
+                        <ArrowUp size={14} className="inline -mt-[2px]" />
                       </span>
                     </div>
 
+                    {/* EMA */}
+                    <div className="flex items-center justify-center gap-1">
+                      {r.advanced.emaAligned ? (
+                        <>
+                          <Check size={16} color="hsl(160,84%,39%)" />
+                          <span className="text-[13px] text-[hsl(160,84%,39%)]">
+                            Aligned
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <X size={16} color="hsl(0,84%,57%)" />
+                          <span className="text-[13px] text-[hsl(0,84%,57%)]">
+                            Crossed
+                          </span>
+                        </>
+                      )}
+                    </div>
+
                     {/* VOL */}
-                    <div className="min-w-[32px] flex items-end justify-center h-6" title="Relative Volume">
+                    <div className="flex items-center justify-center">
                       <div
                         className="w-[10px] rounded-sm"
                         style={{
-                          height: `${Math.max(4, Math.min(24, (r.advanced.volPct / 100) * 24))}px`,
-                          background: "rgba(14,165,233,.85)", // cyan-ish
+                          height: `${Math.max(4, Math.min(26, (r.advanced.volPct / 100) * 26))}px`,
+                          background: "rgba(14,165,233,.85)",
                           boxShadow: "0 0 6px rgba(14,165,233,.35)",
                         }}
+                        title="Relative Volume"
                       />
                     </div>
 
                     {/* ALERT */}
-                    <button
-                      className="min-w-[24px]"
-                      title={r.advanced.alert ? "Alert set" : "No alert"}
-                      aria-label="Toggle alert"
-                    >
+                    <div className="flex items-center justify-center">
                       <Bell
                         size={18}
                         color={
@@ -366,8 +377,25 @@ export default function PremiumScreenerSection() {
                             ? "hsl(var(--fs-primary))"
                             : "hsl(var(--fs-muted))"
                         }
+                        title={r.advanced.alert ? "Alert set" : "No alert"}
                       />
-                    </button>
+                    </div>
+                  </div>
+
+                  {/* vertical dividers overlay (purely visual) */}
+                  <div className="pointer-events-none relative">
+                    <div
+                      className="absolute left-1/4 top-[-40px] bottom-[-40px]"
+                      style={{ width: 1, background: "rgba(148,163,184,.18)" }}
+                    />
+                    <div
+                      className="absolute left-2/4 top-[-40px] bottom-[-40px]"
+                      style={{ width: 1, background: "rgba(148,163,184,.18)" }}
+                    />
+                    <div
+                      className="absolute left-3/4 top-[-40px] bottom-[-40px]"
+                      style={{ width: 1, background: "rgba(148,163,184,.18)" }}
+                    />
                   </div>
                 </td>
               </tr>
@@ -376,10 +404,12 @@ export default function PremiumScreenerSection() {
         </table>
 
         {/* footer */}
-        <div className="flex items-center justify-between px-5 py-4">
-          <div className="muted text-sm">Showing 1–8 of 8 assets</div>
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="text-sm" style={{ color: "hsl(var(--fs-muted))" }}>
+            Showing 1–8 of 8 assets
+          </div>
           <button
-            className="btn h-10"
+            className="h-10 rounded-lg px-3 text-[14px]"
             style={{
               background: "transparent",
               border: "1px solid hsl(var(--fs-primary))",
@@ -391,6 +421,33 @@ export default function PremiumScreenerSection() {
         </div>
       </div>
     </div>
+  )
+}
+
+/* ------------------------------- small parts ------------------------------ */
+function SelectLike({
+  defaultValue,
+  options,
+}: {
+  defaultValue: string
+  options: string[]
+}) {
+  return (
+    <select
+      defaultValue={defaultValue}
+      className="h-10 rounded-lg px-3 text-[14px] min-w-[200px]"
+      style={{
+        background: "hsl(var(--fs-bg-2))",
+        border: "1px solid hsl(var(--fs-border))",
+        color: "hsl(var(--fs-foreground))",
+        outline: "none",
+        appearance: "none",
+      }}
+    >
+      {options.map((o) => (
+        <option key={o}>{o}</option>
+      ))}
+    </select>
   )
 }
 

@@ -39,15 +39,17 @@ export default function Sidebar() {
   const pathname = usePathname()
   const params = useSearchParams()
   const tab = params.get("tab") ?? "screener"
-
-  const hrefFor = (key: string) => {
-    const base = pathname || "/dashboard"
-    return `${base}?tab=${key}`
-  }
+  const hrefFor = (key: string) => `${pathname || "/dashboard"}?tab=${key}`
 
   return (
-    <aside className="sidebar hidden md:flex md:flex-col">
-      {/* Brand block */}
+    <aside
+      className="sidebar hidden md:flex md:flex-col"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(10,15,25,1) 0%, rgba(9,13,22,1) 100%)",
+      }}
+    >
+      {/* Brand */}
       <div className="px-5 pt-4 pb-3">
         <div className="flex items-center gap-3">
           <div
@@ -71,6 +73,7 @@ export default function Sidebar() {
         </div>
       </div>
 
+      {/* Nav */}
       <nav className="mt-1 flex-1 px-2">
         {items.map(({ key, label, icon: Icon, soon }) => {
           const active = tab === key
@@ -81,8 +84,12 @@ export default function Sidebar() {
               <span className="text-[15px] font-medium">{label}</span>
               {soon && (
                 <span
-                  className="pill ml-auto"
-                  style={{ borderColor: "transparent", background: "rgba(0,212,255,.12)" }}
+                  className="ml-auto rounded-full px-2 py-[3px] text-[11px] font-semibold"
+                  style={{
+                    background: "rgba(0,212,255,.16)",
+                    color: "hsl(var(--fs-primary))",
+                    border: "1px solid rgba(0,212,255,.35)",
+                  }}
                 >
                   Coming&nbsp;Soon
                 </span>
@@ -92,7 +99,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* User mini-card */}
+      {/* User card */}
       <div className="px-5 py-4 mt-auto">
         <div className="surface p-3 flex items-center gap-3">
           <div
@@ -101,16 +108,16 @@ export default function Sidebar() {
           />
           <div className="min-w-0">
             <div className="text-[13px] text-white truncate">John Doe</div>
-            <div
-              className="pill"
+            <span
+              className="inline-flex items-center rounded-full px-2 py-[3px] text-[11px] font-semibold"
               style={{
-                borderColor: "transparent",
-                background: "rgba(255,215,0,.12)",
+                background: "rgba(255,215,0,.18)",
                 color: "#FFD700",
+                border: "1px solid rgba(255,215,0,.35)",
               }}
             >
               Premium
-            </div>
+            </span>
           </div>
         </div>
       </div>
